@@ -67,9 +67,17 @@ public class EurekaClientServerRestIntegrationTest {
 
     private static String eurekaServiceUrl;
 
+    /**
+     * 从Test方法入手，开始看 Eureka 的源码。
+     * Eureka启动的时候，先执行这个方法
+     *
+     * @throws Exception
+     */
     @BeforeClass
     public static void setUp() throws Exception {
+        // 1. 注入Eureka相关的配置
         injectEurekaConfiguration();
+        // 2. 启动注册中心
         startServer();
         createEurekaServerConfig();
 
@@ -231,16 +239,36 @@ public class EurekaClientServerRestIntegrationTest {
 
     }
 
+    /**
+     * 该方法为启动 Eureka Client 的方法
+     * 原方法是先将 eureka-server 打成 war 包，再运行 war 包，
+     * 我们修改代码启动的时候，每次都要打 war 包，不是很方便。
+     *
+     * ====>
+     * 改为自己加载资源，启动 eureka-server
+     *
+     * @throws Exception
+     */
     private static void startServer() throws Exception {
-        File warFile = findWar();
-
+        //File warFile = findWar();
+        //
+        //server = new Server(8080);
+        //
+        //WebAppContext webapp = new WebAppContext();
+        //webapp.setContextPath("/");
+        //webapp.setWar(warFile.getAbsolutePath());
+        //server.setHandler(webapp);
+        //
+        //server.start();
+        //
+        //eurekaServiceUrl = "http://localhost:8080/v2";
         server = new Server(8080);
 
-        WebAppContext webapp = new WebAppContext();
-        webapp.setContextPath("/");
-        webapp.setWar(warFile.getAbsolutePath());
-        server.setHandler(webapp);
-
+        WebAppContext webAppCtx = new WebAppContext(new File("./eureka-server/src/main/webapp").getAbsolutePath(), "/");
+        webAppCtx.setDescriptor(new File("./eureka-server/src/main/webapp/WEB-INF/web.xml").getAbsolutePath());
+        webAppCtx.setResourceBase(new File("./eureka-server/src/main/resources").getAbsolutePath());
+        webAppCtx.setClassLoader(Thread.currentThread().getContextClassLoader());
+        server.setHandler(webAppCtx);
         server.start();
 
         eurekaServiceUrl = "http://localhost:8080/v2";

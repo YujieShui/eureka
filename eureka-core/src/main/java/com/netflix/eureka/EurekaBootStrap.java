@@ -50,6 +50,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Eureka Server 的启动监听类
+ * 包含了 Eureka Server 启动时，需要初始胡的所有步骤。
+ *
+ *
  * The class that kick starts the eureka server.
  *
  * <p>
@@ -102,6 +106,9 @@ public class EurekaBootStrap implements ServletContextListener {
     }
 
     /**
+     * 实现 ServletContextListener 会先执行 contextInitialized() 方法
+     * 这里就是 Eureka Server 初始化的入口
+     *
      * Initializes Eureka, including syncing up with other Eureka peers and publishing the registry.
      *
      * @see
@@ -110,6 +117,10 @@ public class EurekaBootStrap implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
+            // 初始化 eureka server 的环境
+            // 也就是获取一个 ConfigurationManager 的实例对象
+            // 其中 ConfigurationManager 会读取配置文件里面的配置，后续给 eureka server 使用
+            // * ConfigurationManager 的初始化采用 ===> double check + volatile
             initEurekaEnvironment();
             initEurekaServerContext();
 

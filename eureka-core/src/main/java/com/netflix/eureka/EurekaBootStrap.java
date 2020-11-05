@@ -122,6 +122,8 @@ public class EurekaBootStrap implements ServletContextListener {
             // 其中 ConfigurationManager 会读取配置文件里面的配置，后续给 eureka server 使用
             // * ConfigurationManager 的初始化采用 ===> double check + volatile
             initEurekaEnvironment();
+
+            // 初始化 eureka server 的上下文
             initEurekaServerContext();
 
             ServletContext sc = event.getServletContext();
@@ -156,6 +158,12 @@ public class EurekaBootStrap implements ServletContextListener {
      * init hook for server context. Override for custom logic.
      */
     protected void initEurekaServerContext() throws Exception {
+        // 第一步，加载 eureka-server.properties 的配置
+        // note: 获取配置项的两种方法：
+        // 1. 在这里 EurekaServerConfig 是一个接口，获取配置项是通过接口暴露的方法来获取的，
+        //    这种或者配置的方法和 MybatisPlus Generator 里获取配置项的方式一样，更加面向对象一点
+        // 2. 另一种更加常用的获取配置项的方式，是将配置项放在一个 map 里面，然后定义常量作为 key，
+        //    用 key 到 map 里面去取配置，这种方式更加常见，更加适用于迭代比较快的项目
         EurekaServerConfig eurekaServerConfig = new DefaultEurekaServerConfig();
 
         // For backward compatibility
@@ -166,6 +174,8 @@ public class EurekaBootStrap implements ServletContextListener {
         logger.info(eurekaServerConfig.getJsonCodecName());
         ServerCodecs serverCodecs = new DefaultServerCodecs(eurekaServerConfig);
 
+        // 第二步，初始化 eureka-server 内部的一个 eureka-client
+        // 用来跟其他的 eureka-client 节点进行注册和通信
         ApplicationInfoManager applicationInfoManager = null;
 
         if (eurekaClient == null) {
@@ -182,6 +192,7 @@ public class EurekaBootStrap implements ServletContextListener {
             applicationInfoManager = eurekaClient.getApplicationInfoManager();
         }
 
+        // 3. 第三步，处理注册相关的事情
         PeerAwareInstanceRegistry registry;
         if (isAws(applicationInfoManager.getInfo())) {
             registry = new AwsInstanceRegistry(
@@ -201,6 +212,7 @@ public class EurekaBootStrap implements ServletContextListener {
             );
         }
 
+        // 第四步，处理 peer 节点相关的事情
         PeerEurekaNodes peerEurekaNodes = getPeerEurekaNodes(
                 registry,
                 eurekaServerConfig,
@@ -209,6 +221,7 @@ public class EurekaBootStrap implements ServletContextListener {
                 applicationInfoManager
         );
 
+        // 第五步，完成 eureka server 上下文的构建
         serverContext = new DefaultEurekaServerContext(
                 eurekaServerConfig,
                 serverCodecs,
@@ -223,10 +236,12 @@ public class EurekaBootStrap implements ServletContextListener {
         logger.info("Initialized server context");
 
         // Copy registry from neighboring eureka node
+        // 第六步，善后工作，从相邻的 eureka 节点拷贝注册信息
         int registryCount = registry.syncUp();
         registry.openForTraffic(applicationInfoManager, registryCount);
 
         // Register all monitoring statistics.
+        // 第七步，善后工作，监控所有的监控统计项
         EurekaMonitors.registerAllStats();
     }
     

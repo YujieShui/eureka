@@ -101,12 +101,21 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
         init();
     }
 
+    /**
+     * @see EurekaServerConfig 是 eureka server 用来获取配置信息的一个接口
+     * 利用这个接口就可以获取到 eureka server 的相关配置，
+     * 作用和用 Map 来存配置，然后用 get(key) 来获取配置
+     *
+     *  DefaultEurekaServerConfig 是 EurekaServerConfig 实现类
+     *  init() 方法则是用来初始化配置信息
+     */
     private void init() {
         String env = ConfigurationManager.getConfigInstance().getString(
                 EUREKA_ENVIRONMENT, TEST);
         ConfigurationManager.getConfigInstance().setProperty(
                 ARCHAIUS_DEPLOYMENT_ENVIRONMENT, env);
 
+        // EUREKA_PROPS_FILE 实际上就是 eureka.server.props
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
             // ConfigurationManager

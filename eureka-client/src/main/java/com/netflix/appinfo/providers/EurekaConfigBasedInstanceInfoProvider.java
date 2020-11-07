@@ -55,6 +55,9 @@ public class EurekaConfigBasedInstanceInfoProvider implements Provider<InstanceI
             }
 
             // Builder the instance information to be registered with eureka server
+            // 构造器模式：这里是构造器模式的一个经典实现方式
+            // 就是有一个内部类，内部类里有一个静态方法，然后把参数传进去获取到 Builder
+            // 拿到 Builder 之后，后面再用这个 Builder 来构造对象
             InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder(vipAddressResolver);
 
             // set the appropriate id for the InstanceInfo, falling back to datacenter Id if applicable, else hostname

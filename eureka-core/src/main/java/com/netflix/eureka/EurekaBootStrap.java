@@ -182,8 +182,12 @@ public class EurekaBootStrap implements ServletContextListener {
             EurekaInstanceConfig instanceConfig = isCloud(ConfigurationManager.getDeploymentContext())
                     ? new CloudInstanceConfig()
                     : new MyDataCenterInstanceConfig();
-            
+
+            // 这里通过 ConfigurationManager 去读取一些配置信息，显示加载了一个 EurekaInstanceConfig
+            // 然后再通过 EurekaInstanceConfig 创建 applicationInfoManager
+            // applicationInfoManager 后面会对服务实例进行一些管理
             applicationInfoManager = new ApplicationInfoManager(
+                    // 构造器模式的使用，这里个 get() 方法，实际上有构造器模式的经典运用，可以看一下
                     instanceConfig, new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get());
             
             EurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig();

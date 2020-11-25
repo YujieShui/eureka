@@ -191,12 +191,16 @@ public class EurekaBootStrap implements ServletContextListener {
                     instanceConfig, new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get());
             
             EurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig();
+            // 到了这里了，开始创建 EurekaClient 了。DiscoveryClient 是 EurekaClient 的子类
             eurekaClient = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
         } else {
             applicationInfoManager = eurekaClient.getApplicationInfoManager();
         }
 
         // 3. 第三步，处理注册相关的事情
+        // 可以感知eureka server集群的服务实例注册表，
+        // eureka client（作为服务实例）过来注册的注册表，而且这个注册表是可以感知到eureka server集群的。
+        // 假如有一个eureka server集群的话，这里包含了其他的eureka server中的服务实例注册表的信息的。
         PeerAwareInstanceRegistry registry;
         if (isAws(applicationInfoManager.getInfo())) {
             registry = new AwsInstanceRegistry(
@@ -217,6 +221,7 @@ public class EurekaBootStrap implements ServletContextListener {
         }
 
         // 第四步，处理 peer 节点相关的事情
+        // 集群节点
         PeerEurekaNodes peerEurekaNodes = getPeerEurekaNodes(
                 registry,
                 eurekaServerConfig,
@@ -234,6 +239,8 @@ public class EurekaBootStrap implements ServletContextListener {
                 applicationInfoManager
         );
 
+        // 把 serverContext 放到 EurekaServerContextHolder 里面
+        // 后面可以通过这个 Hodler 来获取 serverContext 中的数据
         EurekaServerContextHolder.initialize(serverContext);
 
         serverContext.initialize();

@@ -193,6 +193,9 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     public void register(InstanceInfo registrant, int leaseDuration, boolean isReplication) {
         read.lock();
         try {
+            // 更加具体的注册的逻辑在这里
+            // gMap 是真正注册表的数据结构，它是一个 Map
+            // key 是 appName，然后里面是 Lease<InstanceInfo>
             Map<String, Lease<InstanceInfo>> gMap = registry.get(registrant.getAppName());
             REGISTER.increment(isReplication);
             if (gMap == null) {

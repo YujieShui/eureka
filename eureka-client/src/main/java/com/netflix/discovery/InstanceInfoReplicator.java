@@ -60,6 +60,7 @@ class InstanceInfoReplicator implements Runnable {
         logger.info("InstanceInfoReplicator onDemand update allowed rate per min is {}", allowedRatePerMinute);
     }
 
+    // 将自己作为一个线程，放到调度线程池中，延迟40s执行
     public void start(int initialDelayMs) {
         if (started.compareAndSet(false, true)) {
             instanceInfo.setIsDirty();  // for initial register
@@ -112,6 +113,7 @@ class InstanceInfoReplicator implements Runnable {
         }
     }
 
+    // 调度线程具体执行的逻辑就在这个 run() 方法里面了
     public void run() {
         try {
             discoveryClient.refreshInstanceInfo();

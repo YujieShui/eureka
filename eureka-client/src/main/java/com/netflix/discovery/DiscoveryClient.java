@@ -358,8 +358,10 @@ public class DiscoveryClient implements EurekaClient {
         remoteRegionsRef = new AtomicReference<>(remoteRegionsToFetch.get() == null ? null : remoteRegionsToFetch.get().split(","));
 
         if (config.shouldFetchRegistry()) {
+            // 如果需要抓取注册表
             this.registryStalenessMonitor = new ThresholdLevelsMetric(this, METRIC_REGISTRY_PREFIX + "lastUpdateSec_", new long[]{15L, 30L, 60L, 120L, 240L, 480L});
         } else {
+            // 如果不需要抓取注册表
             this.registryStalenessMonitor = ThresholdLevelsMetric.NO_OP_METRIC;
         }
 
@@ -394,6 +396,7 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         try {
+            // 后面初始化了3个线程池
             // default size of 2 - 1 each for heartbeat and cacheRefresh
             scheduler = Executors.newScheduledThreadPool(2,
                     new ThreadFactoryBuilder()
@@ -419,6 +422,7 @@ public class DiscoveryClient implements EurekaClient {
                             .build()
             );  // use direct handoff
 
+            // 初始化网络通信的组件
             eurekaTransport = new EurekaTransport();
             scheduleServerEndpointTask(eurekaTransport, args);
 
@@ -436,6 +440,7 @@ public class DiscoveryClient implements EurekaClient {
             throw new RuntimeException("Failed to initialize DiscoveryClient!", e);
         }
 
+        // 尝试抓取注册表
         if (clientConfig.shouldFetchRegistry()) {
             try {
                 boolean primaryFetchRegistryResult = fetchRegistry(false);
@@ -472,9 +477,12 @@ public class DiscoveryClient implements EurekaClient {
             }
         }
 
+        // 启动一堆调度任务
         // finally, init the schedule tasks (e.g. cluster resolvers, heartbeat, instanceInfo replicator, fetch
         initScheduledTasks();
 
+
+        // 将自己注册了一个监控
         try {
             Monitors.registerObject(this);
         } catch (Throwable e) {

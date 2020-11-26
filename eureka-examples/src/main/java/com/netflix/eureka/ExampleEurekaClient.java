@@ -143,7 +143,9 @@ public class ExampleEurekaClient {
         ExampleEurekaClient sampleClient = new ExampleEurekaClient();
 
         // create the client
+        // 基于服务实例构建一个服务实例管理器
         ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new MyDataCenterInstanceConfig());
+        // 再通过服务实例管理器，来构建 EurekaClient，这个生成的是一个 DiscoveryClient
         EurekaClient client = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
 
         // use the client
